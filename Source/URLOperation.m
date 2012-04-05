@@ -8,23 +8,23 @@ static int counter;
 @private
     BOOL executing;
     BOOL finished;
-    SEL method;
-    __strong NSURLConnection *connection;
-    __strong id delegate;
+    NSURLConnection *connection;
+    void (^successBlock)(id result);
+    void (^failureBlock)(NSError *error);
 }
 @end
 
 @implementation URLOperation
 @synthesize url, data;
 
-- (id)initWithURL:(NSString*)u delegate:(id)d selector:(SEL)selector// callback:(id)c
+- (id)initWithURL:(NSString*)u successBlock:(void (^)(id result))success failureBlock:(void (^)(NSError *error))failure
 {
     self = [super init];
 	if (self)
 	{
 		url = u;
-		delegate = d;
-		method = selector;
+		successBlock = success;
+        failureBlock = failure;
 		executing = NO;
 		finished = NO;
 	}
@@ -115,19 +115,13 @@ static int counter;
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)aConnection 
 {
-    if (delegate && method) 
-    {
-        #pragma clang diagnostic push
-        #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-        [delegate performSelector:method withObject:self];
-        #pragma clang diagnostic pop
-    }
-    
+    successBlock(self);
     [self finish];
 }
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
+    failureBlock(error);
     [self finish];
 }
 @end

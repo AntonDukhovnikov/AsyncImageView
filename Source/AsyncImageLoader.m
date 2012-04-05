@@ -67,7 +67,15 @@ static AsyncImageLoader *sharedImageLoader = nil;
 		[delegates setObject:array forKey:url];
 		[array addObject:delegate];
 
-		URLOperation* item = [[URLOperation alloc] initWithURL:url delegate:self selector:@selector(finishedOperation:)];
+		URLOperation* item = [[URLOperation alloc] initWithURL:url successBlock:^(id result) 
+        {
+            [self finishedOperation:result];
+        } failureBlock:^(NSError *error)
+        {
+            
+        }];
+                              
+        
 		
 		[self  addOperation:item];
 	}	
